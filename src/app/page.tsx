@@ -2,7 +2,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { LoginButton } from "@/components/LoginButton";
-import { Leaf, Lock, ShieldCheck, Database, PlayCircle } from "lucide-react";
+import { ShieldCheck, Database, Lock, PlayCircle, Leaf } from "lucide-react";
 import Link from "next/link";
 
 export default async function Home() {
@@ -13,58 +13,105 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 text-gray-900 selection:bg-green-100 selection:text-green-900">
-      <main className="flex flex-col items-center justify-center w-full flex-1 px-4 sm:px-20 text-center">
-        <div className="flex items-center justify-center w-20 h-20 mb-6 rounded-full bg-green-100 shadow-xl shadow-green-100/50">
-          <Leaf className="w-10 h-10 text-green-600" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0f172a] text-white overflow-hidden relative">
+      <style>{`
+        @keyframes zoom {
+          0% { transform: scale(0); }
+          100% { transform: scale(1); }
+        }
+        @keyframes spinSlow {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        @keyframes fadeSlow {
+          0% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .anim-zoom {
+          animation: zoom 2s ease;
+        }
+        .anim-spin-slow {
+          animation: spinSlow 4s linear infinite;
+        }
+        .anim-fade-3 {
+          animation: fadeSlow 3s ease;
+        }
+        .anim-fade-6 {
+          animation: fadeSlow 6s ease;
+        }
+      `}</style>
+
+      <main className="flex flex-col items-center justify-center w-full flex-1 px-4 sm:px-20 text-center z-10 py-10">
+
+        {/* Animated the user's HTML intro */}
+        <div className="container text-center flex flex-col items-center">
+
+          <div className="relative anim-zoom flex flex-col items-center justify-center">
+            {/* If you place the uploaded image inside the 'public' folder as 'logo.png', it will show up here seamlessly! */}
+            <img
+              src="/logo.png"
+              alt="App Logo"
+              className="h-44 w-auto object-contain mb-4 hidden"
+              onError={(e) => (e.currentTarget.style.display = 'none')}
+              onLoad={(e) => {
+                e.currentTarget.style.display = 'block';
+                const emojis = document.getElementById('fallback-emojis');
+                if (emojis) emojis.style.display = 'none';
+              }}
+            />
+            <div id="fallback-emojis" className="flex items-center gap-4">
+              <div className="text-[100px] leading-none">🌿</div>
+              <div className="text-[70px] leading-none anim-spin-slow mt-4">♻️</div>
+            </div>
+          </div>
+
+          <h1 className="text-6xl sm:text-7xl font-extrabold mt-6 bg-gradient-to-r from-[#2ecc71] to-[#3498db] bg-clip-text text-transparent anim-fade-3 tracking-widest uppercase">
+            Data Leaf
+          </h1>
+
+          <div className="text-[28px] text-[#ff7a18] mt-4 anim-fade-6 font-semibold">
+            Using n8n Automation
+          </div>
         </div>
 
-        <h1 className="text-5xl sm:text-7xl font-extrabold tracking-tight text-gray-900 mb-4">
-          Green-<span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-green-700">Data</span>
-        </h1>
-
-        <p className="mt-4 text-xl sm:text-2xl font-medium text-gray-600 max-w-2xl mb-2">
-          Streamline your inbox and contribute to a greener planet.
-        </p>
-
-        <p className="mt-2 text-lg text-gray-500 max-w-xl mb-10">
+        <p className="mt-8 text-lg text-slate-400 max-w-xl mb-12 anim-fade-6">
           Green-Data helps you declutter your Gmail, freeing up digital space and reducing your carbon footprint to combat climate change.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md items-center mt-6">
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md items-center anim-fade-6">
           <LoginButton />
-          <Link href="/dashboard" className="w-full sm:w-auto px-6 py-4 rounded-full font-bold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:text-gray-900 transition-all flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
-            <PlayCircle className="w-5 h-5 text-green-600" />
+          <Link href="/dashboard" className="w-full sm:w-auto px-6 py-4 rounded-full font-bold text-slate-200 bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
+            <PlayCircle className="w-5 h-5 text-[#2ecc71]" />
             Try Demo Dashboard
           </Link>
         </div>
 
-        {/* Security Transparency */}
-        <div className="mt-20 max-w-3xl border-t border-gray-200 pt-16">
-          <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-8">Bank-Level Security & Privacy</h3>
+        {/* Security Transparency in Dark Mode */}
+        <div className="mt-24 max-w-4xl border-t border-slate-800 pt-16 anim-fade-6 w-full">
+          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8 text-center">Bank-Level Security & Privacy</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center">
-              <ShieldCheck className="w-8 h-8 text-green-500 mb-3" />
-              <p className="text-xs font-bold text-gray-700">Google OAuth 2.0 Secure Authentication</p>
+            <div className="bg-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-sm flex flex-col items-center text-center">
+              <ShieldCheck className="w-8 h-8 text-[#2ecc71] mb-3" />
+              <p className="text-xs font-bold text-slate-300">Google OAuth 2.0 Secure Authentication</p>
             </div>
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center">
-              <Database className="w-8 h-8 text-green-500 mb-3" />
-              <p className="text-xs font-bold text-gray-700">We only read structural metadata.</p>
+            <div className="bg-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-sm flex flex-col items-center text-center">
+              <Database className="w-8 h-8 text-[#2ecc71] mb-3" />
+              <p className="text-xs font-bold text-slate-300">We only read structural metadata.</p>
             </div>
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center">
-              <Lock className="w-8 h-8 text-green-500 mb-3" />
-              <p className="text-xs font-bold text-gray-700">We NEVER read or store email content.</p>
+            <div className="bg-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-sm flex flex-col items-center text-center">
+              <Lock className="w-8 h-8 text-[#2ecc71] mb-3" />
+              <p className="text-xs font-bold text-slate-300">We NEVER read or store email content.</p>
             </div>
-            <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm flex flex-col items-center text-center">
-              <Leaf className="w-8 h-8 text-green-500 mb-3" />
-              <p className="text-xs font-bold text-gray-700">Access can be safely revoked at anytime.</p>
+            <div className="bg-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-sm flex flex-col items-center text-center">
+              <Leaf className="w-8 h-8 text-[#2ecc71] mb-3" />
+              <p className="text-xs font-bold text-slate-300">Access can be safely revoked at anytime.</p>
             </div>
           </div>
         </div>
       </main>
 
-      <footer className="w-full h-24 border-t border-gray-200 flex items-center justify-center text-gray-500 text-sm mt-10">
-        &copy; {new Date().getFullYear()} Green-Data. All rights reserved. Built for sustainability.
+      <footer className="w-full h-24 border-t border-slate-800 flex items-center justify-center text-slate-600 text-sm mt-10 z-10 w-full">
+        &copy; {new Date().getFullYear()} DATA LEAF. All rights reserved. Built for sustainability.
       </footer>
     </div>
   );
