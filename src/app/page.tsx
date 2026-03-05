@@ -51,18 +51,8 @@ export default async function Home() {
             <img
               src="/logo.png"
               alt="App Logo"
-              className="h-44 w-auto object-contain mb-4 hidden"
-              onError={(e) => (e.currentTarget.style.display = 'none')}
-              onLoad={(e) => {
-                e.currentTarget.style.display = 'block';
-                const emojis = document.getElementById('fallback-emojis');
-                if (emojis) emojis.style.display = 'none';
-              }}
+              className="h-44 w-auto object-contain mb-4"
             />
-            <div id="fallback-emojis" className="flex items-center gap-4">
-              <div className="text-[100px] leading-none">🌿</div>
-              <div className="text-[70px] leading-none anim-spin-slow mt-4">♻️</div>
-            </div>
           </div>
 
           <h1 className="text-6xl sm:text-7xl font-extrabold mt-6 bg-gradient-to-r from-[#2ecc71] to-[#3498db] bg-clip-text text-transparent anim-fade-3 tracking-widest uppercase">
@@ -75,7 +65,7 @@ export default async function Home() {
         </div>
 
         <p className="mt-8 text-lg text-slate-400 max-w-xl mb-12 anim-fade-6">
-          Green-Data helps you declutter your Gmail, freeing up digital space and reducing your carbon footprint to combat climate change.
+          Data Leaf helps you declutter your Gmail, freeing up digital space and reducing your carbon footprint to combat climate change.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md items-center anim-fade-6">

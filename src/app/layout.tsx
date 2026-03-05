@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Green-Data - Reduce Your Digital Footprint",
+  title: "Data Leaf - Reduce Your Digital Footprint",
   description: "Streamline your inbox and contribute to a greener planet.",
 };
 

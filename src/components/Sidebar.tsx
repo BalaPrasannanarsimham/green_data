@@ -35,7 +35,7 @@ export function Sidebar() {
                 <div className="p-2 bg-green-100 rounded-lg mr-3">
                     <Leaf className="w-5 h-5 text-green-600" />
                 </div>
-                <span className="text-xl font-extrabold text-gray-900 tracking-tight">Green-Data</span>
+                <span className="text-xl font-extrabold text-gray-900 tracking-tight">Data Leaf</span>
             </div>
 
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
