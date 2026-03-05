@@ -46,23 +46,16 @@ export default async function Home() {
         {/* Animated the user's HTML intro */}
         <div className="container text-center flex flex-col items-center">
 
-          <div className="relative anim-zoom flex flex-col items-center justify-center">
-            <div id="fallback-emojis" className="flex items-center gap-4">
-              <div className="text-[100px] leading-none">🌿</div>
-              <div className="text-[70px] leading-none anim-spin-slow mt-4">♻️</div>
-            </div>
-          </div>
-
-          <h1 className="text-6xl sm:text-7xl font-extrabold mt-6 bg-gradient-to-r from-[#2ecc71] to-[#3498db] bg-clip-text text-transparent anim-fade-3 tracking-widest uppercase">
+          <h1 className="text-5xl sm:text-7xl md:text-8xl font-extrabold bg-gradient-to-r from-[#2ecc71] to-[#3498db] bg-clip-text text-transparent anim-fade-3 tracking-widest uppercase">
             Data Leaf
           </h1>
 
-          <div className="text-[28px] text-[#ff7a18] mt-4 anim-fade-6 font-semibold">
+          <div className="text-xl sm:text-[28px] text-[#ff7a18] mt-2 anim-fade-6 font-semibold">
             Using n8n Automation
           </div>
         </div>
 
-        <p className="mt-8 text-lg text-slate-400 max-w-xl mb-12 anim-fade-6">
+        <p className="mt-6 text-base md:text-lg text-slate-400 max-w-xl mb-8 anim-fade-6 px-2">
           Data Leaf helps you declutter your Gmail, freeing up digital space and reducing your carbon footprint to combat climate change.
         </p>
 
@@ -75,9 +68,9 @@ export default async function Home() {
         </div>
 
         {/* Security Transparency in Dark Mode */}
-        <div className="mt-24 max-w-4xl border-t border-slate-800 pt-16 anim-fade-6 w-full">
-          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-8 text-center">Bank-Level Security & Privacy</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
+        <div className="mt-12 md:mt-16 max-w-4xl border-t border-slate-800 pt-8 anim-fade-6 w-full px-2">
+          <h3 className="text-xs md:text-sm font-bold text-slate-500 uppercase tracking-widest mb-6 text-center">Bank-Level Security & Privacy</h3>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 text-left">
             <div className="bg-slate-800/40 p-5 rounded-2xl border border-slate-700/50 shadow-sm flex flex-col items-center text-center">
               <ShieldCheck className="w-8 h-8 text-[#2ecc71] mb-3" />
               <p className="text-xs font-bold text-slate-300">Google OAuth 2.0 Secure Authentication</p>

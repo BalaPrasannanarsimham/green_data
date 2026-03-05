@@ -65,15 +65,28 @@ export async function POST(req: NextRequest) {
             await Promise.all(
                 chunk.map(async (id) => {
                     try {
+                        // 1. Try to move it to the Trash (Bin)
                         await gmail.users.messages.trash({
                             userId: "me",
                             id: id
                         });
                         successfulDeletes++;
                     } catch (err: any) {
-                        // Ignore already deleted / 404 errors as they mean the item is already gone
                         if (err.code === 404) {
+                            // Already deleted
                             successfulDeletes++;
+                        } else if (err.code === 400) {
+                            // Gmail throws 400 if the email is in SPAM or already Trashed. 
+                            // Since the user requested a clean, we will fallback to permanently deleting it.
+                            try {
+                                await gmail.users.messages.delete({
+                                    userId: "me",
+                                    id: id
+                                });
+                                successfulDeletes++;
+                            } catch (fallbackErr) {
+                                console.error(`Fallback delete failed for ${id}:`, fallbackErr);
+                            }
                         } else {
                             console.error(`Failed to trash message ${id}:`, err);
                         }
