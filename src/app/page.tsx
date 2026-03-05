@@ -47,12 +47,10 @@ export default async function Home() {
         <div className="container text-center flex flex-col items-center">
 
           <div className="relative anim-zoom flex flex-col items-center justify-center">
-            {/* If you place the uploaded image inside the 'public' folder as 'logo.png', it will show up here seamlessly! */}
-            <img
-              src="/logo.png"
-              alt="App Logo"
-              className="h-44 w-auto object-contain mb-4"
-            />
+            <div id="fallback-emojis" className="flex items-center gap-4">
+              <div className="text-[100px] leading-none">🌿</div>
+              <div className="text-[70px] leading-none anim-spin-slow mt-4">♻️</div>
+            </div>
           </div>
 
           <h1 className="text-6xl sm:text-7xl font-extrabold mt-6 bg-gradient-to-r from-[#2ecc71] to-[#3498db] bg-clip-text text-transparent anim-fade-3 tracking-widest uppercase">
