@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
-import { google } from "googleapis";
+import { google, gmail_v1 } from "googleapis";
 
 export async function POST(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
         let pageToken: string | undefined = undefined;
 
         do {
-            const listResponse = await gmail.users.messages.list({
+            const rawResponse = await gmail.users.messages.list({
                 userId: "me",
                 q: q,
                 maxResults: 500, // Safe batch size per page
@@ -32,11 +32,13 @@ export async function POST(req: NextRequest) {
                 includeSpamTrash: true, // Required to match spam or trash messages
             });
 
-            if (listResponse.data.messages) {
-                const ids = listResponse.data.messages.map(m => m.id as string);
+            const listResponse = rawResponse.data as gmail_v1.Schema$ListMessagesResponse;
+
+            if (listResponse.messages) {
+                const ids = listResponse.messages.map(m => m.id as string);
                 allMessages = allMessages.concat(ids);
             }
-            pageToken = listResponse.data.nextPageToken || undefined;
+            pageToken = listResponse.nextPageToken || undefined;
         } while (pageToken);
 
         if (allMessages.length === 0) {
