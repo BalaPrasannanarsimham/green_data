@@ -13,7 +13,7 @@ export default async function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0f172a] text-white overflow-hidden relative">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-[#0f172a] text-white overflow-hidden relative" style={{ backgroundImage: 'linear-gradient(rgba(15, 23, 42, 0.85), rgba(15, 23, 42, 0.85)), url(/bg.png)', backgroundSize: 'cover', backgroundPosition: 'center' }}>
       <style>{`
         @keyframes zoom {
           0% { transform: scale(0); }
