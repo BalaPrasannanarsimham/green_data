@@ -10,10 +10,9 @@ export default async function DashboardLayout({
     children: React.ReactNode;
 }) {
     const session = await getServerSession(authOptions);
-    // Demo mode bypass: Allow dashboard layout to load for unauthenticated demo users.
-    // if (!session) {
-    //     redirect("/");
-    // }
+    if (!session) {
+        redirect("/");
+    }
     return (
         <div className="h-screen w-full flex bg-gray-50 overflow-hidden font-sans relative">
             <MobileMenu>
