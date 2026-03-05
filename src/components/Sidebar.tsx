@@ -16,7 +16,7 @@ import {
     Mail
 } from "lucide-react";
 
-export function Sidebar() {
+export function Sidebar({ inMobileMenu = false }: { inMobileMenu?: boolean }) {
     const pathname = usePathname();
     const { data: session } = useSession();
 
