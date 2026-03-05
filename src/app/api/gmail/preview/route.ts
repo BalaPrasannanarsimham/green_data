@@ -48,31 +48,38 @@ export async function POST(req: NextRequest) {
         let total = 0;
         const breakdown: Record<string, number> = {};
 
-        // Fetch counts for each category
-        await Promise.all(
-            categories.map(async (cat: string) => {
-                let catQuery = cat === "spam" ? "in:spam" : `category:${cat}`;
-                const finalQuery = `${catQuery} ${baseQuery}`.trim();
+        // Fetch exact counts for each category using complete pagination
+        for (const cat of categories) {
+            let catQuery = cat === "spam" ? "in:spam" : `category:${cat}`;
+            const finalQuery = `${catQuery} ${baseQuery}`.trim();
 
-                try {
+            let catCount = 0;
+            let pageToken: string | undefined = undefined;
+
+            try {
+                do {
                     const rawResponse = await gmail.users.messages.list({
                         userId: "me",
                         q: finalQuery,
-                        maxResults: 500, // Fetch max to get close count without paginating forever
+                        maxResults: 500,
+                        pageToken: pageToken,
                         includeSpamTrash: true,
                     });
 
                     const listResponse = rawResponse.data as gmail_v1.Schema$ListMessagesResponse;
-                    const count = listResponse.messages?.length || 0;
+                    if (listResponse.messages) {
+                        catCount += listResponse.messages.length;
+                    }
+                    pageToken = listResponse.nextPageToken || undefined;
+                } while (pageToken);
 
-                    breakdown[cat] = count;
-                    total += count;
-                } catch (err) {
-                    console.error(`Failed to fetch count for category ${cat}`, err);
-                    breakdown[cat] = 0;
-                }
-            })
-        );
+                breakdown[cat] = catCount;
+                total += catCount;
+            } catch (err) {
+                console.error(`Failed to fetch exact count for category ${cat}`, err);
+                breakdown[cat] = 0;
+            }
+        }
 
         return NextResponse.json({
             success: true,
