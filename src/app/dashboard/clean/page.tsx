@@ -8,6 +8,8 @@ export default function CleanPage() {
     const [status, setStatus] = useState<"idle" | "cleaning" | "done" | "error">("idle");
     const [errorMsg, setErrorMsg] = useState("");
     const [deletedCount, setDeletedCount] = useState(0);
+    const [previewLoading, setPreviewLoading] = useState(false);
+    const [previewData, setPreviewData] = useState<any>(null);
 
     // Filter States (now checkboxes)
     const [categories, setCategories] = useState({
@@ -28,7 +30,31 @@ export default function CleanPage() {
     const [sizeFilter, setSizeFilter] = useState("");
     const [schedule, setSchedule] = useState("now");
 
-    const handleClean = () => {
+    const handleClean = async () => {
+        if (schedule !== "now") {
+            setShowPopup(true);
+            return;
+        }
+
+        setPreviewLoading(true);
+        try {
+            const selectedCats = Object.entries(categories)
+                .filter(([_, isChecked]) => isChecked)
+                .map(([cat]) => cat);
+
+            const res = await fetch("/api/gmail/preview", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ categories: selectedCats, readStatus, sizeFilter })
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setPreviewData(data);
+            }
+        } catch (e) {
+            console.error("Failed to load preview");
+        }
+        setPreviewLoading(false);
         setShowPopup(true);
     };
 
@@ -217,13 +243,13 @@ export default function CleanPage() {
                     </p>
                     <button
                         onClick={handleClean}
-                        disabled={status === "cleaning"}
+                        disabled={status === "cleaning" || previewLoading}
                         className="w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 bg-red-600 text-white rounded-full font-bold hover:bg-red-700 transition-all active:scale-95 disabled:opacity-50 shadow-lg shadow-red-600/20 whitespace-nowrap"
                     >
-                        {status === "cleaning" ? (
-                            <><Loader2 className="w-5 h-5 animate-spin" /> {schedule === "now" ? "Executing..." : "Saving..."}</>
+                        {status === "cleaning" || previewLoading ? (
+                            <><Loader2 className="w-5 h-5 animate-spin" /> {schedule === "now" ? (previewLoading ? "Scanning..." : "Executing...") : "Saving..."}</>
                         ) : (
-                            <><Trash2 className="w-5 h-5" /> {schedule === "now" ? "Execute Cleanup" : "Set Auto-Clean"}</>
+                            <><Trash2 className="w-5 h-5" /> {schedule === "now" ? "Preview & Delete" : "Set Auto-Clean"}</>
                         )}
 
                     </button>
@@ -273,9 +299,27 @@ export default function CleanPage() {
                             <p className="text-gray-500 mb-4 text-base leading-relaxed">
                                 {schedule === "now" ? "You are about to execute the exact search query:" : `You are scheduling a ${schedule} execution for:`}
                             </p>
-                            <div className="bg-gray-100 p-3 rounded-lg text-sm font-mono text-gray-800 break-words mb-8">
-                                {buildQuery()}
-                            </div>
+                            {schedule === "now" && previewData && previewData.total !== undefined ? (
+                                <div className="text-left mb-8">
+                                    <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
+                                        <h4 className="font-bold text-gray-900 mb-4 text-center">We found ~{previewData.total} unnecessary emails.</h4>
+                                        <ul className="space-y-3">
+                                            {Object.entries(previewData.breakdown).map(([cat, count]: [string, any]) => (
+                                                count > 0 && (
+                                                    <li key={cat} className="flex justify-between text-sm">
+                                                        <span className="capitalize text-gray-600 font-medium">{cat}</span>
+                                                        <span className="font-bold text-gray-900">{count}</span>
+                                                    </li>
+                                                )
+                                            ))}
+                                        </ul>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-gray-100 p-3 rounded-lg text-sm font-mono text-gray-800 break-words mb-8">
+                                    {buildQuery()}
+                                </div>
+                            )}
 
                             <div className="flex flex-col sm:flex-row gap-4 w-full">
                                 <button

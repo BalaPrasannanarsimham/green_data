@@ -8,6 +8,8 @@ import {
     Trash2,
     BarChart2,
     History,
+    Lightbulb,
+    Crown,
     Settings,
     LogOut,
     Leaf,
@@ -20,10 +22,11 @@ export function Sidebar() {
 
     const links = [
         { name: "Dashboard", href: "/dashboard", icon: Home },
-        { name: "Clean", href: "/dashboard/clean", icon: Trash2 },
-        { name: "Eco Data", href: "/dashboard/eco-data", icon: BarChart2 },
-        { name: "History", href: "/dashboard/history", icon: History },
+        { name: "Inbox Scan", href: "/dashboard/clean", icon: Trash2 },
+        { name: "Carbon Impact", href: "/dashboard/eco-data", icon: BarChart2 },
+        { name: "Recommendations", href: "/dashboard/recommendations", icon: Lightbulb },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
+        { name: "Upgrade", href: "/dashboard/upgrade", icon: Crown },
     ];
 
     return (
@@ -32,7 +35,7 @@ export function Sidebar() {
                 <div className="p-2 bg-green-100 rounded-lg mr-3">
                     <Leaf className="w-5 h-5 text-green-600" />
                 </div>
-                <span className="text-xl font-extrabold text-gray-900 tracking-tight">Data Leaf</span>
+                <span className="text-xl font-extrabold text-gray-900 tracking-tight">Green-Data</span>
             </div>
 
             <div className="flex-1 overflow-y-auto py-6 px-4 space-y-2">
@@ -46,8 +49,8 @@ export function Sidebar() {
                             key={link.name}
                             href={link.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${isReallyActive
-                                    ? "bg-green-50 text-green-700 shadow-sm border border-green-100"
-                                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
+                                ? "bg-green-50 text-green-700 shadow-sm border border-green-100"
+                                : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 border border-transparent"
                                 }`}
                         >
                             <Icon className={`w-5 h-5 ${isReallyActive ? "text-green-600" : "text-gray-400"}`} />

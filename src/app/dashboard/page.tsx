@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { HardDrive, CloudRain, Zap, Inbox, Sparkles, AlertCircle, Loader2 } from "lucide-react";
+import { HardDrive, CloudRain, Zap, Inbox, Sparkles, AlertCircle, Loader2, Trophy, Star } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
 
 export default function Dashboard() {
     const [stats, setStats] = useState<any>(null);
@@ -70,6 +71,32 @@ export default function Dashboard() {
                 <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/4 pointer-events-none" />
             </div>
 
+            {/* Eco Score System */}
+            <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+                <div className="flex items-center gap-6">
+                    <div className="relative w-20 h-20 rounded-full flex items-center justify-center bg-gray-50 border-4 border-green-500 shadow-inner">
+                        <span className="text-2xl font-black text-gray-900">82</span>
+                    </div>
+                    <div>
+                        <h3 className="text-sm font-bold text-gray-500 uppercase tracking-widest mb-1">Eco Score</h3>
+                        <div className="flex items-center gap-3">
+                            <span className="text-2xl font-black text-gray-900">Level: <span className="text-green-600">🌿 Cleaner</span></span>
+                        </div>
+                        <p className="text-sm text-gray-500 mt-1">You are consistently reducing your carbon footprint!</p>
+                    </div>
+                </div>
+                <div className="flex gap-2">
+                    <div className="flex flex-col items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <Trophy className="w-5 h-5 text-yellow-500 mb-1" />
+                        <span className="text-xs font-bold text-gray-700">Inbox Cleaner</span>
+                    </div>
+                    <div className="flex flex-col items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
+                        <Star className="w-5 h-5 text-blue-500 mb-1" />
+                        <span className="text-xs font-bold text-gray-700">Zero Inbox Hero</span>
+                    </div>
+                </div>
+            </div>
+
             <h2 className="text-2xl font-bold text-gray-900 border-b border-gray-200 pb-4">Current Actual Footprint</h2>
 
             {/* Widgets Grid */}
@@ -128,6 +155,75 @@ export default function Dashboard() {
                     </div>
                 </div>
 
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
+                {/* Carbon Saved Over Time */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-900 mb-6">Carbon Saved Over Time (kg CO₂)</h3>
+                    <div className="h-64 w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <BarChart data={[
+                                { name: "Jan", saved: 0.5 },
+                                { name: "Feb", saved: 0.8 },
+                                { name: "Mar", saved: 1.2 },
+                                { name: "Apr", saved: 1.8 }
+                            ]}>
+                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} />
+                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} />
+                                <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
+                                <Bar dataKey="saved" fill="#16A34A" radius={[4, 4, 0, 0]} />
+                            </BarChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+
+                {/* Email Category Breakdown */}
+                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
+                    <h3 className="text-lg font-bold text-gray-900 mb-6">Email Category Breakdown</h3>
+                    <div className="h-64 w-full flex items-center justify-center">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <PieChart>
+                                <Pie
+                                    data={[
+                                        { name: "Promotions", value: 4000 },
+                                        { name: "Social", value: 3000 },
+                                        { name: "Updates", value: 2000 },
+                                        { name: "Inbox", value: 1000 }
+                                    ]}
+                                    innerRadius={60}
+                                    outerRadius={80}
+                                    paddingAngle={5}
+                                    dataKey="value"
+                                >
+                                    <Cell fill="#16A34A" />
+                                    <Cell fill="#4ADE80" />
+                                    <Cell fill="#9CA3AF" />
+                                    <Cell fill="#D1D5DB" />
+                                </Pie>
+                                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB' }} />
+                            </PieChart>
+                        </ResponsiveContainer>
+                    </div>
+                </div>
+            </div>
+
+            {/* AI Insights & Carbon Equivalents */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">
+                <div className="bg-[#F9FAFB] p-6 rounded-3xl border border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">You have saved 2.4kg CO₂ 🌍</h3>
+                    <p className="text-gray-600 mb-4">Deleting 1,000 emails saves ~4kg CO₂ annually. Your current savings are equivalent to:</p>
+                    <ul className="space-y-3">
+                        <li className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-sm font-semibold text-gray-700">🚘 Driving a car for 8 km avoided</li>
+                        <li className="flex items-center gap-3 bg-white p-3 rounded-xl border border-gray-100 shadow-sm text-sm font-semibold text-gray-700">🔋 Charging your smartphone 300 times</li>
+                    </ul>
+                </div>
+                <div className="bg-[#F9FAFB] p-6 rounded-3xl border border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-900 mb-4">AI Suggestion ✨</h3>
+                    <p className="text-gray-600 mb-4">You receive over 100 social media alert emails monthly. Disabling email notifications for social media can significantly reduce your carbon footprint.</p>
+                    <button className="bg-[#16A34A] hover:bg-[#15803D] text-white px-5 py-2.5 rounded-xl font-bold transition-colors">Apply Auto-Clean Filter</button>
+                </div>
             </div>
         </div>
     );
