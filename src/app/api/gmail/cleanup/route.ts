@@ -5,12 +5,9 @@ import { google, gmail_v1 } from "googleapis";
 export async function POST(req: NextRequest) {
     const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
     if (!token || !token.accessToken) {
-        // Demo Mode Bypass
         return NextResponse.json({
-            success: true,
-            deletedCount: 2140,
-            message: "Emails successfully moved to Trash (Demo Mode)."
-        });
+            error: "Demo Mode is active. To protect your privacy, no real emails were deleted. Please click 'Logout' then 'Get Started with Google' to scan your actual inbox!"
+        }, { status: 401 });
     }
 
     const oauth2Client = new google.auth.OAuth2();
@@ -76,16 +73,23 @@ export async function POST(req: NextRequest) {
                             // Already deleted
                             successfulDeletes++;
                         } else if (err.code === 400) {
-                            // Gmail throws 400 if the email is in SPAM or already Trashed. 
-                            // Since the user requested a clean, we will fallback to permanently deleting it.
+                            // Gmail throws 400 if the email is in SPAM or TRASH. 
+                            // We use .modify() to remove the SPAM/TRASH label, bringing it to the archive, then trash it!
                             try {
-                                await gmail.users.messages.delete({
+                                await gmail.users.messages.modify({
+                                    userId: "me",
+                                    id: id,
+                                    requestBody: {
+                                        removeLabelIds: ["SPAM", "TRASH"]
+                                    }
+                                });
+                                await gmail.users.messages.trash({
                                     userId: "me",
                                     id: id
                                 });
                                 successfulDeletes++;
                             } catch (fallbackErr) {
-                                console.error(`Fallback delete failed for ${id}:`, fallbackErr);
+                                console.error(`Fallback modify->trash failed for ${id}:`, fallbackErr);
                             }
                         } else {
                             console.error(`Failed to trash message ${id}:`, err);
