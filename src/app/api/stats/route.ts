@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { google } from "googleapis";
 
 export async function GET(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    const session = await getServerSession(authOptions);
 
-    if (!token || !token.accessToken) {
+    if (!session || !(session as any).accessToken) {
         // Demi Mode Bypass: Return mock data instead of 401 to allow judges to view the dashboard UI
         return NextResponse.json({
             storage: { usageGB: "4.20", limitGB: "15.00", usagePercent: "28.0" },
@@ -16,7 +17,7 @@ export async function GET(req: NextRequest) {
     }
 
     const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: token.accessToken as string });
+    oauth2Client.setCredentials({ access_token: (session as any).accessToken as string });
 
     const drive = google.drive({ version: "v3", auth: oauth2Client });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });

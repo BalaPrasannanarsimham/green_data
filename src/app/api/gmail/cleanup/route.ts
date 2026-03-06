@@ -1,17 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 import { google, gmail_v1 } from "googleapis";
 
 export async function POST(req: NextRequest) {
-    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
-    if (!token || !token.accessToken) {
+    const session = await getServerSession(authOptions);
+    if (!session || !(session as any).accessToken) {
         return NextResponse.json({
             error: "Demo Mode is active. To protect your privacy, no real emails were deleted. Please click 'Logout' then 'Get Started with Google' to scan your actual inbox!"
         }, { status: 401 });
     }
 
     const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: token.accessToken as string });
+    oauth2Client.setCredentials({ access_token: (session as any).accessToken as string });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
     try {
