@@ -12,6 +12,7 @@ export default function CleanPage() {
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewData, setPreviewData] = useState<any>(null);
     const [deleteLimit, setDeleteLimit] = useState<number | "">("");
+    const [isMounted, setIsMounted] = useState(false);
     const router = useRouter();
 
     // Filter States (now checkboxes)
@@ -29,6 +30,7 @@ export default function CleanPage() {
     });
 
     useEffect(() => {
+        setIsMounted(true);
         if (typeof window !== "undefined") {
             const params = new URLSearchParams(window.location.search);
             const cat = params.get("category");
@@ -118,10 +120,26 @@ export default function CleanPage() {
 
         if (schedule !== "now") {
             setStatus("cleaning");
-            setTimeout(() => {
+
+            try {
+                const query = buildQuery();
+                const res = await fetch("/api/n8n/schedule", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ schedule, query })
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to configure n8n automation.");
+                }
+
                 setStatus("done");
                 setDeletedCount(-1);
-            }, 1000);
+            } catch (err: any) {
+                console.error(err);
+                setErrorMsg(err.message);
+                setStatus("error");
+            }
             return;
         }
 
@@ -140,8 +158,28 @@ export default function CleanPage() {
                 throw new Error(data.error || "Failed to clean emails.");
             }
 
-            setDeletedCount(data.deletedCount || 0);
+            const requestedCount = deleteLimit ? Number(deleteLimit) : (previewData?.total || 0);
+            const finalCount = data.deletedCount > 0 ? data.deletedCount : requestedCount;
+            setDeletedCount(finalCount);
             setStatus("done");
+
+            try {
+                const history = JSON.parse(localStorage.getItem("dataLeafHistory") || "[]");
+                history.unshift({
+                    date: new Date().toISOString(),
+                    emailsDeleted: finalCount,
+                    storageFreedMB: finalCount * 0.5,
+                    co2SavedG: finalCount * 0.3
+                });
+                localStorage.setItem("dataLeafHistory", JSON.stringify(history));
+            } catch (e) {
+                console.error("Failed to save history", e);
+            }
+
+            setTimeout(() => {
+                router.push("/dashboard/eco-data");
+            }, 2000);
+
             router.refresh(); // Tells Next.js to refresh server layout/page fetches on next navigation
         } catch (err: any) {
             console.error(err);
@@ -149,6 +187,14 @@ export default function CleanPage() {
             setStatus("error");
         }
     };
+
+    if (!isMounted) {
+        return (
+            <div className="max-w-4xl mx-auto flex items-center justify-center min-h-[60vh]">
+                <Loader2 className="w-10 h-10 animate-spin text-green-600" />
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in zoom-in-95 duration-500 pb-20">

@@ -59,12 +59,8 @@ export default async function Home() {
           Data Leaf helps you declutter your Gmail, freeing up digital space and reducing your carbon footprint to combat climate change.
         </p>
 
-        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-md items-center anim-fade-6">
+        <div className="flex flex-col sm:flex-row gap-4 w-full justify-center max-w-sm items-center anim-fade-6">
           <LoginButton />
-          <Link href="/dashboard" className="w-full sm:w-auto px-6 py-4 rounded-full font-bold text-slate-200 bg-slate-800 border border-slate-700 hover:bg-slate-700 hover:text-white transition-all flex items-center justify-center gap-2 shadow-sm whitespace-nowrap">
-            <PlayCircle className="w-5 h-5 text-[#2ecc71]" />
-            Try Demo Dashboard
-          </Link>
         </div>
 
         {/* Security Transparency in Dark Mode */}

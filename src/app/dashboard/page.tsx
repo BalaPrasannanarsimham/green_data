@@ -178,58 +178,7 @@ export default function Dashboard() {
 
             </div>
 
-            {/* Charts Section */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6 border-t border-gray-200">
-                {/* Carbon Saved Over Time */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Carbon Saved Over Time (kg CO₂)</h3>
-                    <div className="h-64 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[
-                                { name: "Jan", saved: 0.5 },
-                                { name: "Feb", saved: 0.8 },
-                                { name: "Mar", saved: 1.2 },
-                                { name: "Apr", saved: 1.8 }
-                            ]}>
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#6B7280', fontSize: 12 }} />
-                                <Tooltip cursor={{ fill: '#F9FAFB' }} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }} />
-                                <Bar dataKey="saved" fill="#16A34A" radius={[4, 4, 0, 0]} />
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
 
-                {/* Email Category Breakdown */}
-                <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Email Category Breakdown (KB)</h3>
-                    <div className="h-64 w-full flex items-center justify-center">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <PieChart>
-                                <Pie
-                                    isAnimationActive={false} // Disable standard Recharts pie chart delay animation loops so updates feel instantaneous
-                                    data={stats.categoryBreakdown || [
-                                        { name: "Promotions", value: 4000 },
-                                        { name: "Social", value: 3000 },
-                                        { name: "Updates", value: 2000 },
-                                        { name: "Inbox", value: 1000 }
-                                    ]}
-                                    innerRadius={60}
-                                    outerRadius={80}
-                                    paddingAngle={5}
-                                    dataKey="value"
-                                >
-                                    <Cell fill="#16A34A" />
-                                    <Cell fill="#4ADE80" />
-                                    <Cell fill="#9CA3AF" />
-                                    <Cell fill="#D1D5DB" />
-                                </Pie>
-                                <Tooltip formatter={(value: any) => `${(value || 0).toLocaleString('en-US')} KB`} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB' }} />
-                            </PieChart>
-                        </ResponsiveContainer>
-                    </div>
-                </div>
-            </div>
 
             {/* AI Insights & Carbon Equivalents */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6">

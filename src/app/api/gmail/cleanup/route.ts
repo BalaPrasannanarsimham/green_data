@@ -80,6 +80,13 @@ export async function POST(req: NextRequest) {
                             // Gmail throws 400 if the email is in SPAM or TRASH. 
                             // We use .modify() to remove the SPAM/TRASH label, bringing it to the archive, then trash it!
                             try {
+                                await gmail.users.messages.modify({
+                                    userId: "me",
+                                    id: id,
+                                    requestBody: {
+                                        removeLabelIds: ["SPAM", "TRASH"]
+                                    }
+                                });
                                 await gmail.users.messages.delete({
                                     userId: "me",
                                     id: id

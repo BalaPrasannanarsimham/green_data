@@ -58,27 +58,16 @@ export async function GET(req: NextRequest) {
         const categoryBreakdown: { name: string, value: number, exactCount?: number }[] = [];
         let totalUnwantedCount = 0;
 
-        // Try to fetch counts for categories precisely via pagination
+        // Fetch counts efficiently using resultSizeEstimate (FAST)
         await Promise.all(categoriesToFetch.map(async (cat) => {
             try {
-                let catCount = 0;
-                let pageToken: string | undefined = undefined;
+                const response = await gmail.users.messages.list({
+                    userId: "me",
+                    q: cat === "personal" ? "category:primary" : `category:${cat}`,
+                    maxResults: 1 // We only need the estimate
+                });
 
-                do {
-                    const response: any = await gmail.users.messages.list({
-                        userId: "me",
-                        q: cat === "personal" ? "category:primary" : `category:${cat}`,
-                        maxResults: 500,
-                        pageToken: pageToken
-                    });
-
-                    if (response.data.messages) {
-                        catCount += response.data.messages.length;
-                    }
-                    pageToken = response.data.nextPageToken || undefined;
-                } while (pageToken);
-
-                const exactCount = catCount;
+                const exactCount = response.data.resultSizeEstimate || 0;
                 if (cat !== "personal") totalUnwantedCount += exactCount;
 
                 const name = cat.charAt(0).toUpperCase() + cat.slice(1);

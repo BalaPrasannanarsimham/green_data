@@ -24,6 +24,7 @@ export function Sidebar({ inMobileMenu = false }: { inMobileMenu?: boolean }) {
         { name: "Dashboard", href: "/dashboard", icon: Home },
         { name: "Inbox Scan", href: "/dashboard/clean", icon: Trash2 },
         { name: "Carbon Impact", href: "/dashboard/eco-data", icon: BarChart2 },
+        { name: "History", href: "/dashboard/history", icon: History },
         { name: "Recommendations", href: "/dashboard/recommendations", icon: Lightbulb },
         { name: "Settings", href: "/dashboard/settings", icon: Settings },
         { name: "Upgrade", href: "/dashboard/upgrade", icon: Crown },

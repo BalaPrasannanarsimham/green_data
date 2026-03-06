@@ -1,8 +1,11 @@
 "use client";
 
 import { Lightbulb, CheckCircle, Mail, Clock } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function Recommendations() {
+    const router = useRouter();
+
     return (
         <div className="space-y-10 animate-in fade-in zoom-in-95 duration-500 pb-20">
             <div>
@@ -18,7 +21,12 @@ export default function Recommendations() {
                     <div>
                         <h3 className="font-bold text-lg text-gray-900">Heavy LinkedIn Traffic</h3>
                         <p className="text-sm text-gray-500 mt-1">You receive ~120 LinkedIn notification emails monthly. Suggestion: Unsubscribe or switch to push notifications to reduce inbox clutter.</p>
-                        <button className="mt-4 bg-gray-100 font-bold text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors">Take Action</button>
+                        <button
+                            onClick={() => router.push('/dashboard/clean?category=social')}
+                            className="mt-4 bg-gray-100 font-bold text-gray-700 px-4 py-2 rounded-lg text-sm hover:bg-gray-200 transition-colors"
+                        >
+                            Take Action
+                        </button>
                     </div>
                 </div>
 
@@ -29,7 +37,12 @@ export default function Recommendations() {
                     <div>
                         <h3 className="font-bold text-lg text-gray-900">Old Promotions</h3>
                         <p className="text-sm text-gray-500 mt-1">You have over 5,000 promotional emails older than 1 year. Set up a Monthly Auto-Clean schedule to remove these automatically.</p>
-                        <button className="mt-4 bg-green-600 font-bold text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors">Setup Schedule</button>
+                        <button
+                            onClick={() => router.push('/dashboard/clean?category=promotions')}
+                            className="mt-4 bg-green-600 font-bold text-white px-4 py-2 rounded-lg text-sm hover:bg-green-700 transition-colors"
+                        >
+                            Setup Schedule
+                        </button>
                     </div>
                 </div>
             </div>
