@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Trash2, AlertTriangle, CheckCircle, Filter, Loader2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function CleanPage() {
     const [showPopup, setShowPopup] = useState(false);
@@ -10,6 +11,8 @@ export default function CleanPage() {
     const [deletedCount, setDeletedCount] = useState(0);
     const [previewLoading, setPreviewLoading] = useState(false);
     const [previewData, setPreviewData] = useState<any>(null);
+    const [deleteLimit, setDeleteLimit] = useState<number | "">("");
+    const router = useRouter();
 
     // Filter States (now checkboxes)
     const [categories, setCategories] = useState({
@@ -24,6 +27,22 @@ export default function CleanPage() {
         read: false,
         unread: false
     });
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            const params = new URLSearchParams(window.location.search);
+            const cat = params.get("category");
+            if (cat && ["promotions", "social", "updates", "spam", "primary"].includes(cat)) {
+                setCategories({
+                    primary: cat === "primary",
+                    promotions: cat === "promotions",
+                    social: cat === "social",
+                    updates: cat === "updates",
+                    spam: cat === "spam"
+                });
+            }
+        }
+    }, []);
 
     // For sizes, keeping it simple with a single selected value via state strings for these 
     // while rendering them visually as checkboxes/tiles.
@@ -50,6 +69,7 @@ export default function CleanPage() {
             const data = await res.json();
             if (res.ok) {
                 setPreviewData(data);
+                setDeleteLimit(data.total || "");
             }
         } catch (e) {
             console.error("Failed to load preview");
@@ -111,7 +131,7 @@ export default function CleanPage() {
             const res = await fetch("/api/gmail/cleanup", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ q: query })
+                body: JSON.stringify({ q: query, limit: deleteLimit ? Number(deleteLimit) : undefined })
             });
 
             const data = await res.json();
@@ -122,6 +142,7 @@ export default function CleanPage() {
 
             setDeletedCount(data.deletedCount || 0);
             setStatus("done");
+            router.refresh(); // Tells Next.js to refresh server layout/page fetches on next navigation
         } catch (err: any) {
             console.error(err);
             setErrorMsg(err.message);
@@ -133,7 +154,7 @@ export default function CleanPage() {
         <div className="max-w-4xl mx-auto space-y-10 animate-in fade-in zoom-in-95 duration-500 pb-20">
             <div>
                 <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Clean Inbox</h1>
-                <p className="text-gray-500 mt-2 text-lg">Select exactly what to clean. Emails will be directly moved to the trash.</p>
+                <p className="text-gray-500 mt-2 text-lg">Select exactly what to clean. Emails will be permanently deleted immediately to free up Google Drive storage.</p>
             </div>
 
             <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
@@ -277,9 +298,9 @@ export default function CleanPage() {
                             </>
                         ) : (
                             <>
-                                <h3 className="text-xl font-bold text-green-900 mb-1">Mails Moved to Trash Successfully!</h3>
+                                <h3 className="text-xl font-bold text-green-900 mb-1">Emails Permanently Deleted!</h3>
                                 <p className="text-green-700 font-medium opacity-90">
-                                    Direct cleanup executed. {deletedCount} emails moved to trash! (n8n setup is done successfully)
+                                    Drive storage actively freed. {deletedCount} emails were permanently wiped from your inbox.
                                 </p>
                             </>
                         )}
@@ -302,7 +323,7 @@ export default function CleanPage() {
                             {schedule === "now" && previewData && previewData.total !== undefined ? (
                                 <div className="text-left mb-8">
                                     <div className="bg-gray-50 border border-gray-200 rounded-xl p-6">
-                                        <h4 className="font-bold text-gray-900 mb-4 text-center">We found ~{previewData.total} unnecessary emails.</h4>
+                                        <h4 className="font-bold text-gray-900 mb-4 text-center">We found ~{previewData.total} matched emails.</h4>
                                         <ul className="space-y-3">
                                             {Object.entries(previewData.breakdown).map(([cat, count]: [string, any]) => (
                                                 count > 0 && (
@@ -313,6 +334,17 @@ export default function CleanPage() {
                                                 )
                                             ))}
                                         </ul>
+                                    </div>
+                                    <div className="mt-6 text-center">
+                                        <label className="block text-sm font-bold text-gray-700 mb-2">How many do you want to delete?</label>
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            max={previewData.total}
+                                            value={deleteLimit}
+                                            onChange={(e) => setDeleteLimit(e.target.value === "" ? "" : Number(e.target.value))}
+                                            className="w-full text-center text-lg font-bold border-2 border-red-200 focus:border-red-500 focus:ring-red-500 rounded-xl py-3"
+                                        />
                                     </div>
                                 </div>
                             ) : (
@@ -332,7 +364,7 @@ export default function CleanPage() {
                                     onClick={confirmClean}
                                     className={`flex-1 py-4 px-6 rounded-full font-bold text-white transition-colors shadow-lg ${schedule === "now" ? "bg-red-600 hover:bg-red-700 shadow-red-600/30" : "bg-teal-600 hover:bg-teal-700 shadow-teal-600/30"}`}
                                 >
-                                    {schedule === "now" ? "Yes, Move to Trash" : "Yes, Schedule Now"}
+                                    {schedule === "now" ? "Yes, Delete Emails" : "Yes, Schedule Now"}
                                 </button>
                             </div>
                         </div>

@@ -1,17 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 import { google, gmail_v1 } from "googleapis";
 
 export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
 
-    if (!session || !(session as any).accessToken) {
+    if (!token || !token.accessToken) {
         return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: (session as any).accessToken as string });
+    oauth2Client.setCredentials({ access_token: token.accessToken as string });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
     try {

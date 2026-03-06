@@ -9,7 +9,7 @@ export default function Dashboard() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    useEffect(() => {
+    const loadStats = () => {
         fetch("/api/stats")
             .then(async (res) => {
                 const data = await res.json();
@@ -27,6 +27,17 @@ export default function Dashboard() {
                 setError(`Failed to fetch data: ${err.message}. If this is a permission error, please re-login to grant Google Drive scopes.`);
                 setLoading(false);
             });
+    };
+
+    useEffect(() => {
+        loadStats();
+        // Set up polling to automatically refresh stats and pie charts every 15 seconds
+        // so any deletions in `dashboard/clean` rapidly sync across the UI.
+        const interval = setInterval(() => {
+            loadStats();
+        }, 15000);
+
+        return () => clearInterval(interval);
     }, []);
 
     if (loading) {
@@ -48,6 +59,16 @@ export default function Dashboard() {
                 </div>
             </div>
         );
+    }
+
+    let highestCategory = { name: "", exactCount: 0 };
+    if (stats?.categoryBreakdown) {
+        for (const cat of stats.categoryBreakdown) {
+            if (cat.name === "Inbox") continue;
+            if ((cat.exactCount || 0) > highestCategory.exactCount) {
+                highestCategory = { name: cat.name, exactCount: cat.exactCount || 0 };
+            }
+        }
     }
 
     return (
@@ -181,12 +202,13 @@ export default function Dashboard() {
 
                 {/* Email Category Breakdown */}
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-                    <h3 className="text-lg font-bold text-gray-900 mb-6">Email Category Breakdown</h3>
+                    <h3 className="text-lg font-bold text-gray-900 mb-6">Email Category Breakdown (KB)</h3>
                     <div className="h-64 w-full flex items-center justify-center">
                         <ResponsiveContainer width="100%" height="100%">
                             <PieChart>
                                 <Pie
-                                    data={[
+                                    isAnimationActive={false} // Disable standard Recharts pie chart delay animation loops so updates feel instantaneous
+                                    data={stats.categoryBreakdown || [
                                         { name: "Promotions", value: 4000 },
                                         { name: "Social", value: 3000 },
                                         { name: "Updates", value: 2000 },
@@ -202,7 +224,7 @@ export default function Dashboard() {
                                     <Cell fill="#9CA3AF" />
                                     <Cell fill="#D1D5DB" />
                                 </Pie>
-                                <Tooltip contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB' }} />
+                                <Tooltip formatter={(value: any) => `${(value || 0).toLocaleString('en-US')} KB`} contentStyle={{ borderRadius: '12px', border: '1px solid #E5E7EB' }} />
                             </PieChart>
                         </ResponsiveContainer>
                     </div>
@@ -221,8 +243,19 @@ export default function Dashboard() {
                 </div>
                 <div className="bg-[#F9FAFB] p-6 rounded-3xl border border-gray-200">
                     <h3 className="text-lg font-bold text-gray-900 mb-4">AI Suggestion ✨</h3>
-                    <p className="text-gray-600 mb-4">You receive over 100 social media alert emails monthly. Disabling email notifications for social media can significantly reduce your carbon footprint.</p>
-                    <button className="bg-[#16A34A] hover:bg-[#15803D] text-white px-5 py-2.5 rounded-xl font-bold transition-colors">Apply Auto-Clean Filter</button>
+                    <p className="text-gray-600 mb-4">
+                        {!stats?.categoryBreakdown ? "Analyzing your inbox..." :
+                            (highestCategory.exactCount === 0 ? "Great job! Your inbox is highly optimized right now. Keep it up!" :
+                                `You receive over ${highestCategory.exactCount} ${highestCategory.name.toLowerCase()} emails. Auto-cleaning your ${highestCategory.name} tab can significantly reduce your carbon footprint!`)
+                        }
+                    </p>
+                    {highestCategory.exactCount > 0 && (
+                        <button
+                            onClick={() => window.location.href = `/dashboard/clean?category=${highestCategory.name.toLowerCase()}`}
+                            className="bg-[#16A34A] hover:bg-[#15803D] text-white px-5 py-2.5 rounded-xl font-bold transition-colors">
+                            Apply Auto-Clean Filter
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

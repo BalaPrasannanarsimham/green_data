@@ -1,22 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "@/lib/auth";
+import { getToken } from "next-auth/jwt";
 import { google, gmail_v1 } from "googleapis";
 
 export async function POST(req: NextRequest) {
-    const session = await getServerSession(authOptions);
-    if (!session || !(session as any).accessToken) {
+    const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
+    if (!token || !token.accessToken) {
         return NextResponse.json({
             error: "Demo Mode is active. To protect your privacy, no real emails were deleted. Please click 'Logout' then 'Get Started with Google' to scan your actual inbox!"
         }, { status: 401 });
     }
 
     const oauth2Client = new google.auth.OAuth2();
-    oauth2Client.setCredentials({ access_token: (session as any).accessToken as string });
+    oauth2Client.setCredentials({ access_token: token.accessToken as string });
     const gmail = google.gmail({ version: "v1", auth: oauth2Client });
 
     try {
-        const { q } = await req.json();
+        const { q, limit } = await req.json();
 
         if (!q) {
             return NextResponse.json({ error: "Invalid query" }, { status: 400 });
@@ -52,6 +51,10 @@ export async function POST(req: NextRequest) {
             });
         }
 
+        if (limit && limit > 0) {
+            allMessages = allMessages.slice(0, limit);
+        }
+
         // We must use the trash method for each message individually.
         // Doing them all at once can overload the API or cause silent drops, 
         // so we process in chunks of 10 with a small delay.
@@ -63,8 +66,8 @@ export async function POST(req: NextRequest) {
             await Promise.all(
                 chunk.map(async (id) => {
                     try {
-                        // 1. Try to move it to the Trash (Bin)
-                        await gmail.users.messages.trash({
+                        // 1. Try to permanently delete it (bypasses Trash to free up Google Drive storage instantly)
+                        await gmail.users.messages.delete({
                             userId: "me",
                             id: id
                         });
@@ -77,20 +80,13 @@ export async function POST(req: NextRequest) {
                             // Gmail throws 400 if the email is in SPAM or TRASH. 
                             // We use .modify() to remove the SPAM/TRASH label, bringing it to the archive, then trash it!
                             try {
-                                await gmail.users.messages.modify({
-                                    userId: "me",
-                                    id: id,
-                                    requestBody: {
-                                        removeLabelIds: ["SPAM", "TRASH"]
-                                    }
-                                });
-                                await gmail.users.messages.trash({
+                                await gmail.users.messages.delete({
                                     userId: "me",
                                     id: id
                                 });
                                 successfulDeletes++;
                             } catch (fallbackErr) {
-                                console.error(`Fallback modify->trash failed for ${id}:`, fallbackErr);
+                                console.error(`Fallback delete failed for ${id}:`, fallbackErr);
                             }
                         } else {
                             console.error(`Failed to trash message ${id}:`, err);
@@ -108,7 +104,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({
             success: true,
             deletedCount: successfulDeletes,
-            message: "Emails successfully moved to Trash."
+            message: "Emails permanently deleted! Your Google Drive storage is now visibly freed up."
         });
     } catch (error: any) {
         console.error("Gmail Cleanup Error:", error);
