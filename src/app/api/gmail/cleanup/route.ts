@@ -55,66 +55,54 @@ export async function POST(req: NextRequest) {
             allMessages = allMessages.slice(0, limit);
         }
 
-        // We must use the trash method for each message individually.
-        // Doing them all at once can overload the API or cause silent drops, 
-        // so we process in chunks of 10 with a small delay.
-        const chunkSize = 10;
+        // Speed up deletion using batchModify to add the TRASH label.
+        // This is significantly more efficient than individual calls and prevents server timeouts.
+        const batchSize = 1000;
         let successfulDeletes = 0;
 
-        for (let i = 0; i < allMessages.length; i += chunkSize) {
-            const chunk = allMessages.slice(i, i + chunkSize);
-            await Promise.all(
-                chunk.map(async (id) => {
+        for (let i = 0; i < allMessages.length; i += batchSize) {
+            const chunk = allMessages.slice(i, i + batchSize);
+            try {
+                // Adding the 'TRASH' label is the standard way to move messages to trash in batches.
+                // We also remove 'INBOX' to ensure they disappear from the main view immediately.
+                await gmail.users.messages.batchModify({
+                    userId: "me",
+                    requestBody: {
+                        ids: chunk,
+                        addLabelIds: ["TRASH"],
+                        removeLabelIds: ["INBOX", "UNREAD"]
+                    }
+                });
+                successfulDeletes += chunk.length;
+            } catch (err: any) {
+                console.error(`Batch cleanup failed for chunk starting at index ${i}, falling back to individual trash.`, err);
+                // Fallback: Individual trash method for robustness
+                for (const id of chunk) {
                     try {
-                        // 1. Try to permanently delete it (bypasses Trash to free up Google Drive storage instantly)
-                        await gmail.users.messages.delete({
+                        await gmail.users.messages.trash({
                             userId: "me",
                             id: id
                         });
                         successfulDeletes++;
-                    } catch (err: any) {
-                        if (err.code === 404) {
-                            // Already deleted
-                            successfulDeletes++;
-                        } else if (err.code === 400) {
-                            // Gmail throws 400 if the email is in SPAM or TRASH. 
-                            // We use .modify() to remove the SPAM/TRASH label, bringing it to the archive, then trash it!
-                            try {
-                                await gmail.users.messages.modify({
-                                    userId: "me",
-                                    id: id,
-                                    requestBody: {
-                                        removeLabelIds: ["SPAM", "TRASH"]
-                                    }
-                                });
-                                await gmail.users.messages.delete({
-                                    userId: "me",
-                                    id: id
-                                });
-                                successfulDeletes++;
-                            } catch (fallbackErr) {
-                                console.error(`Fallback delete failed for ${id}:`, fallbackErr);
-                            }
-                        } else {
-                            console.error(`Failed to trash message ${id}:`, err);
-                        }
+                    } catch (individualErr: any) {
+                        console.error(`Failed to trash message ${id}:`, individualErr.message);
                     }
-                })
-            );
+                }
+            }
 
-            // Introduce a short wait between chunks to guarantee we don't exceed Google rate limits
-            if (i + chunkSize < allMessages.length) {
-                await new Promise(resolve => setTimeout(resolve, 200));
+            // Small delay between batches to stay safe with Google's quota limits
+            if (i + batchSize < allMessages.length) {
+                await new Promise(resolve => setTimeout(resolve, 150));
             }
         }
 
         return NextResponse.json({
             success: true,
             deletedCount: successfulDeletes,
-            message: "Emails permanently deleted! Your Google Drive storage is now visibly freed up."
+            message: "Emails successfully moved to Trash! Your Google Drive storage will update shortly as the system syncs."
         });
     } catch (error: any) {
         console.error("Gmail Cleanup Error:", error);
-        return NextResponse.json({ error: "Failed to clean emails" }, { status: 500 });
+        return NextResponse.json({ error: "Failed to clean emails: " + error.message }, { status: 500 });
     }
 }
